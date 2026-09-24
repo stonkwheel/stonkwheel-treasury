@@ -1,0 +1,2 @@
+# Preserve the exact bytes used for the deployed source build.
+* -text -filter -ident

@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+"""Transparent solana-verify adapter for this programme's original compiler recipe.
+
+This compiles the mounted source. It never downloads or copies a prebuilt programme.
+The deployed ELF retains its symbol tables, so the result must not be stripped.
+"""
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+args = sys.argv[1:]
+if args and args[0] == 'build-sbf':
+    args.pop(0)
+if not args or args.pop(0) != '--':
+    raise SystemExit('Only the documented cargo build-sbf -- invocation is supported')
+while args:
+    arg = args.pop(0)
+    if arg in ('--locked', '--frozen'):
+        continue
+    if arg == '--config' and args and args.pop(0) == 'registries.crates-io.protocol="sparse"':
+        continue
+    if arg == '--manifest-path' and args and Path(args.pop(0)).resolve() == Path('Cargo.toml').resolve():
+        continue
+    raise SystemExit('Unsupported build argument: ' + arg)
+for filename in ('src/lib.rs', 'Cargo.toml', 'Cargo.lock', 'build.sh', 'programme.json'):
+    if not Path(filename).is_file() or Path(filename).is_symlink():
+        raise SystemExit('Missing regular source file: ' + filename)
+identity = json.loads(Path('programme.json').read_text())
+for filename, expected in identity['sourceFiles'].items():
+    if hashlib.sha256(Path(filename).read_bytes()).hexdigest() != expected:
+        raise SystemExit('Source identity mismatch: ' + filename)
+env = os.environ.copy()
+env.pop('CARGO_TARGET_DIR', None)
+env.pop('RUSTFLAGS', None)
+subprocess.run(['bash', 'build.sh'], check=True, env=env)
+binary = Path('artifacts/stonk_vault.so').read_bytes()
+if len(binary) != identity['binaryBytes'] or hashlib.sha256(binary).hexdigest() != identity['binarySha256']:
+    raise SystemExit('Rebuilt ELF does not match the deployed programme')
+out = Path('target/deploy')
+out.mkdir(parents=True, exist_ok=True)
+shutil.copyfile('artifacts/stonk_vault.so', out / 'stonk_vault.so')
+print('Verified fresh source build:', identity['binarySha256'])

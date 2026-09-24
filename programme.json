@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "program": "54bCSEN5dMFbYyT8v5WSP1JZzzKkBGY1yLwMhiWfC9WV",
+  "programData": "HVvppnxxubxeSX2tUisw3YFBDeDAjy4WGwo7CsNX9RnX",
+  "binaryBytes": 163048,
+  "binarySha256": "d76cfe71ebbb3a642c2f3223eb325962a23e9c97c7bba1be03e8b6d85ebd6d58",
+  "solanaVerifyHash": "7b9ed1d0d1eeb3aeafd767485bd802747acfa361a3a694f0644d5cca08a426fc",
+  "platformToolsVersion": "1.57",
+  "platformToolsArchiveSha256": "b0f7af104adf726fff2a6a09ea2eb2f2d2965c92295f4d7388c08d140e0c2b00",
+  "sourceFiles": {
+    "src/lib.rs": "a43b9cea925cfafb6aa6deda970a7b5190ee31bccb87bc0466a5241a16d694a2",
+    "Cargo.toml": "7d1b8dd4fb021fcf65b7e2db0633cf8f3689f85a8f00f1c45054c5d8219d827f",
+    "Cargo.lock": "c8c3e589447c39787705e369e7be4b04e661dc8edef5ab0e06d07eacf24456d9",
+    "build.sh": "4a1dd7afc991cbc26ce735216cf8d9e2d8d629e0e86f4c728bc14669a5091acc"
+  }
+}
