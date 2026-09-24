@@ -11,7 +11,27 @@ if [[ -e build-output ]]; then
 fi
 mkdir build-output
 work_dir=$(mktemp -d)
-trap 'rm -rf -- "$work_dir"' EXIT
+cleanup() {
+  local result=$?
+  trap - EXIT
+  # Restore ownership of bind-mounted compiler output before host-side cleanup.
+  if [[ -n "${image_id:-}" && -d "$work_dir/source" ]]; then
+    if ! docker run --rm --read-only --network none --user 0:0 \
+      --mount "type=bind,source=$work_dir,target=/cleanup" \
+      --entrypoint chown "$image_id" \
+      --recursive --no-dereference -P -- "$(id -u):$(id -g)" /cleanup; then
+      echo 'Could not restore temporary build-file ownership.' >&2
+      if [[ "$result" -eq 0 ]]; then result=1; fi
+      exit "$result"
+    fi
+  fi
+  if ! rm -rf -- "$work_dir"; then
+    echo 'Could not remove the temporary build directory.' >&2
+    if [[ "$result" -eq 0 ]]; then result=1; fi
+  fi
+  exit "$result"
+}
+trap cleanup EXIT
 verifier="$work_dir/solana-verify"
 rpc_url=https://api.mainnet-beta.solana.com
 program_id=54bCSEN5dMFbYyT8v5WSP1JZzzKkBGY1yLwMhiWfC9WV
